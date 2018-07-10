@@ -39,6 +39,12 @@ usage() {
 	echo "${Yellow} Use${Green} $this ${Yellow}without any option to prompt for country code(s)${ColorOff}"
 }
 
+die_with_root_message() {
+    echo -e "\n${Yellow}[${this}]${Red} Error: ${Yellow}YOU MUST BE ROOT TO USE THIS!"
+    echo -e "${Magenta}Tip: ${Yellow}Precede your command with 'sudo'${ColorOff}\n"
+    exit 1
+}
+
 get_opts() {
 
 	this=${0##*/} # Set 'this', 'rank_int', 'confirm', 'countries', and color variables
@@ -57,10 +63,15 @@ get_opts() {
 
     if [ -z "$1" ] && [ "$UID" -ne "0" ]; then
         usage ; exit 0
-    elif [ "$UID" -ne "0" ]; then
-       echo -e "\n${Yellow}[${this}]${Red} Error: ${Yellow}YOU MUST BE ROOT TO USE THIS!"
-       echo -e "${Magenta}Tip: ${Yellow}Precede your command with 'sudo'${ColorOff}\n"
-       exit 1
+    else case "$1" in
+        -h|--help)
+            usage ; exit 0
+        ;;
+        esac
+    fi
+
+    if [ "$UID" -ne "0" ]; then
+       die_with_root_message
     fi
 
 	if [ -f /tmp/mirrorlist ]; then
@@ -93,9 +104,6 @@ get_opts() {
 				echo "${Yellow}Note: Use only the upercase two character code in your command ex:${Green} $this -c US"
 				echo "${Yellow}Or simply use:${Green} ${this}${ColorOff}"
 				break
-			;;
-			-h|--help) # Display usage message
-				usage ; break
 			;;
 			-c|--country) # Country parameter allows user to input country code (ex: US)
 				if [ -z "$2" ]; then
